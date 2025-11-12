@@ -1,0 +1,10 @@
+
+git add.
+emp and system files
+*.log
+__pycache__/
+.env
+*.pyc
+*.tmp
+.DS_Store
+Thumbs.db
