@@ -27,41 +27,14 @@ app = FastAPI(
 @app.get("/env-debug")
 def env_debug():
     """
-    Debug endpoint to see what SUPABASE_DSN looks like in the running app.
-    We only expose partial info (no full secrets).
+    Show DB_* env vars (without password) so we can verify Render config.
     """
-    dsn = os.getenv("SUPABASE_DSN", "")
-
-    parsed_user = None
-    parsed_host = None
-
-    # key=value DSN parsing
-    if "user=" in dsn:
-        try:
-            parsed_user = dsn.split("user=", 1)[1].split()[0]
-        except:
-            parsed_user = None
-
-    if "host=" in dsn:
-        try:
-            parsed_host = dsn.split("host=", 1)[1].split()[0]
-        except:
-            parsed_host = None
-
-    # URI-style parsing (postgresql://user:pass@host:port/db)
-    if dsn.startswith("postgresql://"):
-        try:
-            after_scheme = dsn[len("postgresql://"):]
-            user_pass, after_user = after_scheme.split("@", 1)
-            parsed_user = user_pass.split(":")[0]
-            parsed_host = after_user.split("/")[0].split(":")[0]
-        except:
-            pass
-
     return {
-        "dsn_prefix": dsn[:140],  # first chars; avoids leaking password
-        "parsed_user": parsed_user,
-        "parsed_host": parsed_host,
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_PORT": os.getenv("DB_PORT"),
+        "DB_NAME": os.getenv("DB_NAME"),
+        "DB_USER": os.getenv("DB_USER"),
+        "LOCAL_MODE": os.getenv("LOCAL_MODE"),
     }
 
 # Jinja2 templates setup (adjust path if you change folder structure)
@@ -141,6 +114,10 @@ def sample_summary():
 # DB execution helper
 # =========================
 
+# =========================
+# DB execution helper
+# =========================
+
 def execute_sql_sync(sql: str):
     """
     Executes a SQL query synchronously on Supabase using psycopg2.
@@ -183,6 +160,7 @@ def execute_sql_sync(sql: str):
         return [dict(r) for r in rows]
     except Exception as e:
         return {"error": str(e)}
+
 
 @app.get("/db-test")
 def db_test():
