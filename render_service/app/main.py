@@ -137,14 +137,41 @@ def sample_summary():
 # DB execution helper
 # =========================
 
+# =========================
+# DB execution helper
+# =========================
+
 def execute_sql_sync(sql: str):
     """
     Executes a SQL query synchronously on Supabase using psycopg2.
+    Uses explicit DB_* environment variables so we fully control user/host.
     Returns list of dicts, or {"error": "..."} on failure.
     """
-    dsn = os.getenv("SUPABASE_DSN")
-    if not dsn:
-        raise RuntimeError("SUPABASE_DSN not set in environment variables.")
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT", "5432")
+    db_name = os.getenv("DB_NAME", "postgres")
+    db_user = os.getenv("DB_USER")
+    db_password = os.getenv("DB_PASSWORD")
+
+    missing = []
+    if not db_host:
+        missing.append("DB_HOST")
+    if not db_user:
+        missing.append("DB_USER")
+    if not db_password:
+        missing.append("DB_PASSWORD")
+
+    if missing:
+        return {"error": f"Missing DB env vars: {', '.join(missing)}"}
+
+    dsn = (
+        f"dbname={db_name} "
+        f"user={db_user} "
+        f"password={db_password} "
+        f"host={db_host} "
+        f"port={db_port} "
+        f"sslmode=require"
+    )
 
     try:
         conn = psycopg2.connect(dsn)
@@ -155,7 +182,6 @@ def execute_sql_sync(sql: str):
         conn.close()
         return [dict(r) for r in rows]
     except Exception as e:
-        # Return error as dict so caller can attach it to response
         return {"error": str(e)}
 
 @app.get("/db-test")
