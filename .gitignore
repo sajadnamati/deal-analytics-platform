@@ -1,10 +1,11 @@
-
-git add.
-emp and system files
+# Temp and system files
 *.log
 __pycache__/
-.env
 *.pyc
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Environment / secrets
+.env
+*.env

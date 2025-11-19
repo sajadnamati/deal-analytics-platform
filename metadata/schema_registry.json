@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "dialect": "postgres",
+  "default_schema": "public",
+  "tables": {
+    "deal_event": {
+      "description": "Core transactional event table for deals. Each row is a single buy/sell deal for a given product, counterparty, currency, unit, and date.",
+      "primary_key": ["deal_id"],
+      "columns": {
+        "deal_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "deal_id"
+        },
+        "deal_date": {
+          "sql_type": "date",
+          "nullable": false,
+          "semantic_type": "deal_date"
+        },
+        "product_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "product_id",
+          "references": {
+            "table": "ref_product",
+            "column": "product_id"
+          }
+        },
+        "volume": {
+          "sql_type": "integer",
+          "nullable": false,
+          "semantic_type": "quantity"
+        },
+        "price_usd_per_mt": {
+          "sql_type": "numeric(10,2)",
+          "nullable": false,
+          "semantic_type": "price_per_unit_usd"
+        },
+        "counterparty_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "counterparty_id",
+          "references": {
+            "table": "ref_counterparty",
+            "column": "counterparty_id"
+          }
+        },
+        "currency_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "currency_id",
+          "references": {
+            "table": "ref_currency",
+            "column": "currency_id"
+          }
+        },
+        "unit_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "unit_id",
+          "references": {
+            "table": "ref_unit",
+            "column": "unit_id"
+          }
+        },
+        "direction": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "deal_direction"
+        },
+        "note": {
+          "sql_type": "text",
+          "nullable": true,
+          "semantic_type": "free_text_note"
+        }
+      }
+    },
+    "ref_product": {
+      "description": "Reference table for tradable products (e.g. HSFO, LSFO, diesel, etc.).",
+      "primary_key": ["product_id"],
+      "columns": {
+        "product_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "product_id"
+        },
+        "product_name": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "product_name"
+        }
+      }
+    },
+    "ref_currency": {
+      "description": "Reference table for trade currencies.",
+      "primary_key": ["currency_id"],
+      "columns": {
+        "currency_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "currency_id"
+        },
+        "currency_name": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "currency_name"
+        }
+      }
+    },
+    "ref_counterparty": {
+      "description": "Reference table for trading counterparties.",
+      "primary_key": ["counterparty_id"],
+      "columns": {
+        "counterparty_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "counterparty_id"
+        },
+        "counterparty_name": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "counterparty_name"
+        }
+      }
+    },
+    "ref_unit": {
+      "description": "Reference table for measurement units used in deals (e.g. MT, BBL).",
+      "primary_key": ["unit_id"],
+      "columns": {
+        "unit_id": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "unit_id"
+        },
+        "unit_name": {
+          "sql_type": "text",
+          "nullable": false,
+          "semantic_type": "unit_name"
+        }
+      }
+    }
+  }
+}

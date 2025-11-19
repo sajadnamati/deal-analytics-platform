@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI Deal Analytics · Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap (only for layout / navbar, optional) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #050816;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color: #e5e7eb;
+    }
+
+    /* Navbar */
+    .navbar-custom {
+      background: radial-gradient(circle at top left, #020617, #000000);
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      font-size: 0.98rem;
+      color: #e5e7eb !important;
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      color: #9ca3af !important;
+    }
+
+    .nav-link:hover {
+      color: #e5e7eb !important;
+    }
+
+    .nav-link.active {
+      color: #e5e7eb !important;
+      font-weight: 600;
+    }
+
+    .chat-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+      gap: 0.75rem;
+    }
+
+    .chat-header {
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #22c55e55, transparent),
+                  radial-gradient(circle at top right, #22d3ee55, transparent),
+                  #020617;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .chat-header-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .chat-header-subtitle {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .chat-header-badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: #d1d5db;
+    }
+
+    .chat-body {
+      flex: 1;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      border-radius: 1.5rem;
+      padding: 1rem;
+      overflow-y: auto;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .chat-message {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .chat-avatar.user {
+      background: linear-gradient(to bottom right, #22c55e, #16a34a);
+      color: #022c22;
+    }
+
+    .chat-avatar.bot {
+      background: radial-gradient(circle at top left, #22d3ee, #6366f1);
+      color: #e0f2fe;
+    }
+
+    .chat-bubble {
+      max-width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.9rem;
+      font-size: 0.86rem;
+      line-height: 1.35rem;
+      white-space: pre-wrap;
+    }
+
+    .chat-bubble.user {
+      background: rgba(22, 163, 74, 0.14);
+      color: #bbf7d0;
+      border: 1px solid rgba(74, 222, 128, 0.45);
+    }
+
+    .chat-bubble.bot {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    .chat-footer {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.6rem;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 999px;
+      padding: 0.3rem 0.4rem 0.3rem 1rem;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.75);
+    }
+
+    .chat-textarea {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+      padding: 0.4rem 0;
+      max-height: 120px;
+    }
+
+    .chat-textarea::placeholder {
+      color: #6b7280;
+    }
+
+    .send-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: linear-gradient(to bottom right, #22c55e, #16a34a);
+      color: #022c22;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.45);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #6b7280;
+      padding: 0 0.4rem;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      margin-right: 0.3rem;
+    }
+
+    @media (max-width: 768px) {
+      .chat-wrapper {
+        padding: 0.75rem;
+      }
+
+      .chat-body {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Top navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand" href="/">AI Deal Analytics</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Chat</a>
+          </li>
+          <li class="nav-item">
+            <!-- /docs is FastAPI's built-in Swagger UI (perfect debug page) -->
+            <a class="nav-link" href="/docs">Debug</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="chat-wrapper">
+    <header class="chat-header">
+      <div>
+        <div class="chat-header-title">AI News & Deals Chat</div>
+        <div class="chat-header-subtitle">
+          Ask anything about your markets, positions, or risk — this view is just conversation.
+        </div>
+      </div>
+      <div class="chat-header-badge">
+        Live · Read-only analytics
+      </div>
+    </header>
+
+    <main id="chat-body" class="chat-body">
+      <!-- Initial assistant message -->
+      <div class="chat-message">
+        <div class="chat-avatar bot">AI</div>
+        <div class="chat-bubble bot">
+Welcome back. 👋  
+This page is your clean chat surface.  
+
+Ask a question like:
+- "Summarize today’s HSFO market drivers"
+- "How did gasoil cracks move this week?"
+- "What does my 2024 HSFO volume look like by port?"
+        </div>
+      </div>
+    </main>
+
+    <footer class="chat-footer">
+      <div class="input-row">
+        <textarea
+          id="chat-input"
+          class="chat-textarea"
+          rows="1"
+          placeholder="Send a message..."
+        ></textarea>
+        <button id="send-btn" class="send-btn">
+          <span>Send</span>
+          <span>↵</span>
+        </button>
+      </div>
+      <div class="status-row">
+        <div>
+          <span class="status-dot"></span>
+          <span id="status-text">Connected · using /chat endpoint</span>
+        </div>
+        <div>Shift + Enter = newline</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Optional Bootstrap JS for navbar collapse on mobile -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Chat backend endpoint (FastAPI /chat)
+    const CHAT_API_URL = "/chat";
+
+    const chatBody = document.getElementById("chat-body");
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+    const statusText = document.getElementById("status-text");
+
+    function appendMessage(role, text) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat-message";
+
+      const avatar = document.createElement("div");
+      avatar.className = "chat-avatar " + (role === "user" ? "user" : "bot");
+      avatar.textContent = role === "user" ? "You" : "AI";
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble " + (role === "user" ? "user" : "bot");
+      bubble.textContent = text;
+
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bubble);
+      chatBody.appendChild(wrapper);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function appendThinking() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat-message";
+      wrapper.id = "thinking-message";
+
+      const avatar = document.createElement("div");
+      avatar.className = "chat-avatar bot";
+      avatar.textContent = "AI";
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble bot";
+      bubble.textContent = "Thinking…";
+
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bubble);
+      chatBody.appendChild(wrapper);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function removeThinking() {
+      const node = document.getElementById("thinking-message");
+      if (node) {
+        node.remove();
+      }
+    }
+
+    function formatAnswer(data) {
+      // Your backend returns: status, stage, question, sql, validator, rows, error
+      if (data.error) {
+        return "Error:\n" + data.error;
+      }
+
+      let parts = [];
+      if (data.sql) {
+        parts.push("SQL:\n" + data.sql);
+      }
+      if (data.validator) {
+        parts.push("Validator:\n" + JSON.stringify(data.validator, null, 2));
+      }
+      if (data.rows) {
+        parts.push("Rows:\n" + JSON.stringify(data.rows, null, 2));
+      }
+
+      if (parts.length === 0) {
+        return JSON.stringify(data, null, 2);
+      }
+
+      return parts.join("\n\n");
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      appendMessage("user", text);
+      chatInput.value = "";
+      sendBtn.disabled = true;
+      appendThinking();
+      statusText.textContent = "Processing your question…";
+
+      try {
+        const response = await fetch(CHAT_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ question: text }),
+        });
+
+        const data = await response.json();
+        removeThinking();
+
+        const answer = formatAnswer(data);
+        appendMessage("assistant", answer);
+        statusText.textContent = "Ready";
+      } catch (err) {
+        console.error(err);
+        removeThinking();
+        appendMessage(
+          "assistant",
+          "Sorry, I couldn't reach the server. Please try again."
+        );
+        statusText.textContent = "Error talking to server";
+      } finally {
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
