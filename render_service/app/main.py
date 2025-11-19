@@ -21,6 +21,48 @@ app = FastAPI(
     version="0.1.0",
     description="NLP → SQL → Validator → Supabase execution",
 )
+# ----------------------------------------------------
+# Environment Debug Endpoint
+# ----------------------------------------------------
+@app.get("/env-debug")
+def env_debug():
+    """
+    Debug endpoint to see what SUPABASE_DSN looks like in the running app.
+    We only expose partial info (no full secrets).
+    """
+    dsn = os.getenv("SUPABASE_DSN", "")
+
+    parsed_user = None
+    parsed_host = None
+
+    # key=value DSN parsing
+    if "user=" in dsn:
+        try:
+            parsed_user = dsn.split("user=", 1)[1].split()[0]
+        except:
+            parsed_user = None
+
+    if "host=" in dsn:
+        try:
+            parsed_host = dsn.split("host=", 1)[1].split()[0]
+        except:
+            parsed_host = None
+
+    # URI-style parsing (postgresql://user:pass@host:port/db)
+    if dsn.startswith("postgresql://"):
+        try:
+            after_scheme = dsn[len("postgresql://"):]
+            user_pass, after_user = after_scheme.split("@", 1)
+            parsed_user = user_pass.split(":")[0]
+            parsed_host = after_user.split("/")[0].split(":")[0]
+        except:
+            pass
+
+    return {
+        "dsn_prefix": dsn[:140],  # first chars; avoids leaking password
+        "parsed_user": parsed_user,
+        "parsed_host": parsed_host,
+    }
 
 # Jinja2 templates setup (adjust path if you change folder structure)
 templates = Jinja2Templates(directory="render_service/app/templates")
@@ -185,38 +227,3 @@ def main_chat_page(request: Request):
     """
     return templates.TemplateResponse("news_chat.html", {"request": request})
 
-@app.get("/env-debug")
-def env_debug():
-    """
-    Debug endpoint to see what SUPABASE_DSN looks like in the running app.
-    We only expose a prefix and the parsed user/host so we don't leak secrets.
-    """
-    dsn = os.getenv("SUPABASE_DSN", "")
-
-    parsed_user = None
-    parsed_host = None
-
-    # For key=value DSN (dbname=... user=... host=...)
-    if "user=" in dsn:
-        user_part = dsn.split("user=", 1)[1]
-        parsed_user = user_part.split()[0]
-
-    if "host=" in dsn:
-        host_part = dsn.split("host=", 1)[1]
-        parsed_host = host_part.split()[0]
-
-    # For URI DSN (postgresql://user:pass@host:port/db)
-    if dsn.startswith("postgresql://") and parsed_user is None:
-        try:
-            after_scheme = dsn.split("postgresql://", 1)[1]
-            user_pass, rest = after_scheme.split("@", 1)
-            parsed_user = user_pass.split(":", 1)[0]
-            parsed_host = rest.split("/", 1)[0].split(":", 1)[0]
-        except Exception:
-            pass
-
-    return {
-        "dsn_prefix": dsn[:140],  # first chars only
-        "parsed_user": parsed_user,
-        "parsed_host": parsed_host,
-    }
